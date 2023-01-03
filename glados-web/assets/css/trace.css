@@ -91,3 +91,7 @@ body {
 #no-progress {
     background: #956955;
 }
+
+.previous {
+    margin-left: 10px;
+}
