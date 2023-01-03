@@ -18,7 +18,6 @@ const colors = {
     blue: 0,
     orange: 1,
     red: 2,
-    other: 5,
     green: 4,
     brown: 8,
     gray: 9,
@@ -154,8 +153,6 @@ function createGraphData(trace) {
 
 }
 
-
-
 // Returns a list of nodes in the route.
 // Starts from the end (where the content was found) and finds the way back to the origin.
 function computeSuccessfulRoute(trace) {
@@ -247,9 +244,15 @@ function generateTable(nodes) {
 
 function highlightTableEntry(node) {
     unHighlight();
-    let enr = node.target.__data__.id.substring(4);
-    let id_string = '#' + enr;
+    let enr = node.target.__data__.id;
+    let enr_substr = enr.substring(4);
+    let id_string = '#' + enr_substr;
     $(id_string).css('background-color', 'lightgray');
+
+    var element = document.getElementById(enr_substr);
+    element.scrollIntoView({ block: "nearest", behavior: "auto" });
+
+    highlightNode(enr);
 }
 
 function highlightNode(node) {
