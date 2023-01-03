@@ -13,12 +13,13 @@ use entity::contentaudit;
 use entity::contentid;
 use entity::contentkey;
 use entity::node;
+use tracing::info;
 
 use crate::state::State;
 use crate::templates::{
-    ContentDashboardTemplate, ContentIdDetailTemplate, ContentIdListTemplate,
-    ContentKeyDetailTemplate, ContentKeyListTemplate, HtmlTemplate, IndexTemplate,
-    NodeListTemplate,
+    ContentAuditDetailTemplate, ContentDashboardTemplate, ContentIdDetailTemplate,
+    ContentIdListTemplate, ContentKeyDetailTemplate, ContentKeyListTemplate, HtmlTemplate,
+    IndexTemplate, NodeListTemplate,
 };
 
 //
@@ -132,6 +133,40 @@ pub async fn contentkey_detail(
     let template = ContentKeyDetailTemplate {
         content_key,
         contentaudit_list,
+    };
+    HtmlTemplate(template)
+}
+
+pub async fn contentaudit_detail(
+    Path(audit_id): Path<String>,
+    Extension(state): Extension<Arc<State>>,
+) -> impl IntoResponse {
+    let audit_id = audit_id.parse::<i32>().unwrap();
+    info!("Audit ID: {}", audit_id);
+    let audit = contentaudit::Entity::find_by_id(audit_id)
+        .one(&state.database_connection)
+        .await
+        .unwrap()
+        .expect("No audit found");
+
+    let content_key = audit
+        .find_related(contentkey::Entity)
+        .one(&state.database_connection)
+        .await
+        .unwrap()
+        .expect("Failed to get audit content key");
+
+    let content_id = content_key
+        .find_related(contentid::Entity)
+        .one(&state.database_connection)
+        .await
+        .unwrap()
+        .expect("Failed to get audit's content ID");
+
+    let template = ContentAuditDetailTemplate {
+        audit,
+        content_id,
+        content_key,
     };
     HtmlTemplate(template)
 }
